@@ -4,19 +4,19 @@
 %All the parameters we are going to need
 C=3; %number of classes
 D=4; %number of numeric attributes
-W=zeros(C,D);%the matrix of the classes with the average attributes
-w=zeros(C,1);%the vector of the classes
-Wall=[W w];
-samples=1000; %amount of samples we are going to use
-MSE_all=zeros(1,samples); %Minimum Square error for each sample
-MSE_grad_all=zeros(1,samples); %The gradient of each MSE, we need it to calculate the equation (23)
+W=zeros(C,D);%the weights matrix
+w=zeros(C,1);%the offset
+Wall=[W w];%easier to use this way
+it=1000; %amount of iterations we are going to use
+MSE_all=zeros(1,it); %Minimum Square error for each iteration
+MSE_grad_all=zeros(1,it); %The gradient of each MSE, we need it to calculate the equation (23) in the compendium
 t_1=[1; 0; 0]; %the target for the first class
 t_2=[0; 1; 0]; %target for class 2
 t_3=[0; 0; 1]; %target for class 3
 
 %all the parameters that we can change
-Ntrain=30; %number of samples for the training sequence
-Ntest=20; %number of samples for the test sequence
+Ntrain=30; %number of iterations for the training sequence
+Ntest=20; %number of iterations for the test sequence
 Ntot=Ntrain+Ntest;
 alpha=0.0075; %step factor that should be found while running simulation
 
@@ -50,15 +50,15 @@ x_test=[x1_test; x2_test; x3_test];
 % x3_test=x3all(1:Ntest,:);
 % x_test=[x1_test; x2_test; x3_test];
 
-%We will have to update W until W(m)-W(m-1) is small enough (reference to
-%the equation (23) in the compendium)
+%We will update W and we suppose that with 1000 iterations the difference
+%between W(m) and W(m-1) is going to be small enough
 
 %training
-for i=1:samples
-    %for the first class
+for i=1:it
     MSE=0;
     MSE_grad=0;
-    for k=1:size(x_train,1) %until 90
+    for k=1:size(x_train,1) %until 90 because 3x30
+        %choose the right target
         if k<=Ntrain %corresponds to the first class
             tk=t_1;
         elseif k<=2*Ntrain %second class
@@ -82,6 +82,7 @@ end
 %confusion matrix for training
 conf_train=zeros(C,C); %matrix 3x3
  for k=1:size(x_train,1) %until 90
+        %The true class of the sample
         if k<=Ntrain %corresponds to the first class
             tk=t_1;
             class_trained=1;
@@ -96,6 +97,8 @@ conf_train=zeros(C,C); %matrix 3x3
         %sigmoid calculation
         zk=Wall*xk+w;
         gk=1./(1+exp(-zk));
+        %The class obtained with the classifier is the class with the
+        %maximum discriminant
         [gmax, imax]=max(gk);
         conf_train(class_trained,imax)=conf_train(class_trained,imax)+1;
  end
@@ -104,7 +107,7 @@ disp(conf_train);
 
 %confusion matrix for testing
 conf_test=zeros(C,C); %matrix 3x3
- for k=1:size(x_test,1) %until 90
+ for k=1:size(x_test,1) %until 60 because 3*20
         if k<=Ntest %corresponds to the first class
             tk=t_1;
             class_tested=1;
@@ -127,9 +130,10 @@ disp(conf_test);
 
 %error rate for training
 error_r_train=0;
+%We check all the coefficients of the confusion matrix
 for i=1:C
     for j=1:C
-        if i~=j
+        if i~=j %if it's not a coefficient from the diagonal we add it
             error_r_train=error_r_train+conf_train(i,j);
         end
     end
@@ -159,33 +163,35 @@ disp(error_r_test);
 % nbin_feature=24 %max=2.5 max=0.1
 % %the interval to study is [0;8]
 
-%Class1
-x_feat1 = x1all(:,1);
-x_feat2 = x1all(:,2);
-x_feat3 = x1all(:,3);
-x_feat4 = x1all(:,4);
+%Histograms to compare the features distribution
+%Class 1
+x_feat1 = x1all(:,1);%feature 1 sepal length
+x_feat2 = x1all(:,2);%feature 2 sepal width
+x_feat3 = x1all(:,3);%feature 3 petal length
+x_feat4 = x1all(:,4);%feature 4 petal width
 figure(1);
 subplot(3,4,1);
 histogram(x_feat1);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+%Each row of histograms is associated to one class
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8  
 title('Class 1 Sepal length ');
 
 figure(1);
 subplot(3,4,2);
 histogram(x_feat2);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8  
 title('Class 1 Sepal width');
 
 figure(1);
 subplot(3,4,3);
 histogram(x_feat3);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8  
 title('Class 1 Petal length');
 
 figure(1);
 subplot(3,4,4);
 histogram(x_feat4);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8  
 title('Class 1 Petal width');
 
 %Class2
@@ -196,25 +202,25 @@ x_feat4 = x2all(:,4);
 figure(1);
 subplot(3,4,5);
 histogram(x_feat1);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8 
 title('Class 2 Sepal length ');
 
 figure(1);
 subplot(3,4,6);
 histogram(x_feat2);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8  
 title('Class 2 Sepal width');
 
 figure(1);
 subplot(3,4,7);
 histogram(x_feat3);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8  
 title('Class 2 Petal length');
 
 figure(1);
 subplot(3,4,8);
 histogram(x_feat4);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8 
 title('Class 2 Petal width');
 
 %Class3
@@ -225,41 +231,41 @@ x_feat4 = x3all(:,4);
 figure(1);
 subplot(3,4,9);
 histogram(x_feat1);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8 
 title('Class 3 Sepal length ');
 
 figure(1);
 subplot(3,4,10);
 histogram(x_feat2);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8 
 title('Class 3 Sepal width');
 
 figure(1);
 subplot(3,4,11);
 histogram(x_feat3);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8  
 title('Class 3 Petal length');
 
 figure(1);
 subplot(3,4,12);
 histogram(x_feat4);
-set(gca,'XLim',[0 8]);  % set x-axis limits between 0-10  
+set(gca,'XLim',[0 8]);  % set x-axis limits between 0-8 
 title('Class 3 Petal width');
 %We should remove sepal width so the 2nd feature
 
 %training and testing without this feature
 %training
 D=3;
-W_1feat=zeros(C,D);%the matrix of the classes with the average attributes
-w_1feat=zeros(C,1);%the vector of the classes
+W_1feat=zeros(C,D);
+w_1feat=zeros(C,1);
 Wall_1feat=[W_1feat w_1feat];
-MSE_all_1feat=zeros(1,samples);
-MSE_grad_all_1feat=zeros(1,samples); %The gradient of each MSE, we need it to calculate the equation (23)
+MSE_all_1feat=zeros(1,it);
+MSE_grad_all_1feat=zeros(1,it);
 
+%Removing the second column which is the sepal width
 x_train_1feat=[x_train(:,1) x_train(:,3:4)];
 x_test_1feat=[x_test(:,1) x_test(:,3:4)];
-for i=1:samples
-    %for the first class
+for i=1:it
     MSE=0;
     MSE_grad=0;
     for k=1:size(x_train_1feat,1) %until 90
@@ -308,7 +314,7 @@ disp(conf_train_1feat);
 
 %confusion matrix for testing
 conf_test_1feat=zeros(C,C); %matrix 3x3
- for k=1:size(x_test_1feat,1) %until 90
+ for k=1:size(x_test_1feat,1) %until 60
         if k<=Ntest %corresponds to the first class
             tk=t_1;
             class_tested=1;
@@ -362,15 +368,15 @@ disp(error_r_test_1feat);
 %training and testing without this feature
 %training
 D=2;
-W_2feat=zeros(C,D);%the matrix of the classes with the average attributes
-w_2feat=zeros(C,1);%the vector of the classes
+W_2feat=zeros(C,D);
+w_2feat=zeros(C,1);
 Wall_2feat=[W_2feat w_2feat];
-MSE_all_2feat=zeros(1,samples);
-MSE_grad_all_2feat=zeros(1,samples); %The gradient of each MSE, we need it to calculate the equation (23)
+MSE_all_2feat=zeros(1,it);
+MSE_grad_all_2feat=zeros(1,it); 
 
 x_train_2feat=x_train(:,3:4);
 x_test_2feat=x_test(:,3:4);
-for i=1:samples
+for i=1:it
     %for the first class
     MSE=0;
     MSE_grad=0;
@@ -420,7 +426,7 @@ disp(conf_train_2feat);
 
 %confusion matrix for testing
 conf_test_2feat=zeros(C,C); %matrix 3x3
- for k=1:size(x_test_2feat,1) %until 90
+ for k=1:size(x_test_2feat,1) %until 60
         if k<=Ntest %corresponds to the first class
             tk=t_1;
             class_tested=1;
@@ -470,15 +476,15 @@ disp(error_r_test_2feat);
 %with 1 feature, just petal width left the 4th feature
 %training
 D=1;
-W_3feat=zeros(C,D);%the matrix of the classes with the average attributes
-w_3feat=zeros(C,1);%the vector of the classes
+W_3feat=zeros(C,D);
+w_3feat=zeros(C,1);
 Wall_3feat=[W_3feat w_3feat];
-MSE_all_3feat=zeros(1,samples);
-MSE_grad_all_3feat=zeros(1,samples); %The gradient of each MSE, we need it to calculate the equation (23)
+MSE_all_3feat=zeros(1,it);
+MSE_grad_all_3feat=zeros(1,it);
 
 x_train_3feat=x_train(:,4);
 x_test_3feat=x_test(:,4);
-for i=1:samples
+for i=1:it
     %for the first class
     MSE=0;
     MSE_grad=0;
@@ -528,7 +534,7 @@ disp(conf_train_3feat);
 
 %confusion matrix for testing
 conf_test_3feat=zeros(C,C); %matrix 3x3
- for k=1:size(x_test_3feat,1) %until 90
+ for k=1:size(x_test_3feat,1) %until 60
         if k<=Ntest %corresponds to the first class
             tk=t_1;
             class_tested=1;
@@ -576,15 +582,12 @@ disp('error rate for testing with just 1 feature=');
 disp(error_r_test_3feat);
 
 %Highlight the linear separability
-%As a whole
 
-
-figure(2);         % Sepal lengths vs. sepal width
+figure(2);
 subplot(3,2,1); 
 hold on;
-%for all classes
-%scatter(xall(:,1), xall(:, 2), 'filled');
-%for class 1
+%sepal length / sepal width
+%for class 1 
 scatter(x1all(:,1), x1all(:, 2), 'filled','blue');
 %for class 2
 scatter(x2all(:,1), x2all(:, 2), 'filled','red');
@@ -595,7 +598,7 @@ xlabel('Sepal width');
 ylabel('Sepal length'); 
 
 subplot(3,2,2); 
-         % Petal length vs. petal width
+% Petal length / petal width
 hold on;
 scatter(x1all(:, 3), x1all(:, 4), 'filled','blue');
 scatter(x2all(:, 3), x2all(:, 4), 'filled','red');
@@ -605,17 +608,17 @@ xlabel('Petal length');
 ylabel('Petal width'); 
 
 subplot(3,2,3); 
-         % Petal length vs. sepal length
+% Petal length / sepal length
 hold on;
 scatter(x1all(:, 3), x1all(:, 1), 'filled','blue');
 scatter(x2all(:, 3), x2all(:, 1), 'filled','red');
 scatter(x3all(:, 3), x3all(:, 1), 'filled','yellow');
 legend('Setosa', 'Versicolor', 'Virginica');
-xlabel('Petal width');
+xlabel('Petal length');
 ylabel('Sepal length'); 
 
 subplot(3,2,4); 
-         % Petal width vs. sepal width
+% Petal width / sepal width
 hold on;
 scatter(x1all(:, 4), x1all(:, 2), 'filled','blue');
 scatter(x2all(:, 4), x2all(:, 2), 'filled','red');
@@ -625,7 +628,7 @@ xlabel('Petal width');
 ylabel('Sepal width'); 
 
 subplot(3,2,5); 
-         % Petal width vs. sepal length
+% Petal width / sepal length
 hold on;
 scatter(x1all(:, 4), x1all(:, 1), 'filled','blue');
 scatter(x2all(:, 4), x2all(:, 1), 'filled','red');
@@ -635,7 +638,7 @@ xlabel('Petal width');
 ylabel('Sepal length');
 
 subplot(3,2,6); 
-         % Petal length vs. sepal width
+% Petal length / sepal width
 hold on;
 scatter(x1all(:, 3), x1all(:, 2), 'filled','blue');
 scatter(x2all(:, 3), x2all(:, 2), 'filled','red');
