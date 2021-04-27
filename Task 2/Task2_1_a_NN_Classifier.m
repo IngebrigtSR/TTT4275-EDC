@@ -22,16 +22,14 @@ tic;
 for i = 1:Ntest
     distances = dist(trainv,testv(i,:)');
     [d,dis] = min(distances);
-    predicted = trainlab(dis);
-    guess(predicted+1,i) = 1;
+    guess(trainlab(dis)+1,i) = 1;
 end
 toc
 
 %% Knowns for Confusion Matrix
 known = zeros(Nclasses,Ntest);
 for i = 1:Ntest
-    l = testlab(i);
-    known(l+1,i) = 1;
+    known(testlab(i)+1,i) = 1;
 end
 
 

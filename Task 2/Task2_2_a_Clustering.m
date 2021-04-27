@@ -1,4 +1,7 @@
-%% Datasplit
+M = 64;
+clusters = cell(10,1);
+
+
 trainvectors = cell(10,1);
 for i = 0:9
     v = trainv(trainlab == i,:);
@@ -6,16 +9,14 @@ for i = 0:9
     trainvectors{n} = v;
 end
 
-%% Cluster
-M = 64;
-clusters = cell(10,1);
+
 
 for i = 1:10
     [~,Ci] = kmeans(trainvectors{i},M);
     clusters{i} = Ci;
 end
 
-%% Clustered trainset
+
 trainvClust = cell2mat(clusters);
 trainlabClust = NaN(10*M,1);
 for i = 0:9

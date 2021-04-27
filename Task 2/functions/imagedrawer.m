@@ -5,10 +5,7 @@ function imagedrawer(imagev, tag)
         imagev = reshape(imagev, [28,28]);
     end
     
-    imagev = fliplr(imagev);
-    imagev = rot90(imagev);
-    
-    image(imagev);
+    image(imagev');
     if nargin == 2
         title(sprintf('%d', tag));
     end
