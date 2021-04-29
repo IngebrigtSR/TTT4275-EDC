@@ -13,7 +13,7 @@ Ntrain      = size(trainvClust,1);
 chunkSize   = 1000;
 Nchunks     = Ntrain / chunkSize;
 Nclasses    = 10;
-k           = 7;
+k           = 17;
 
 
 %% Classifier

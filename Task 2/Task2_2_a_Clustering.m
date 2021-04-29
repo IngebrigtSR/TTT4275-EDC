@@ -1,21 +1,15 @@
 M = 64;
 clusters = cell(10,1);
-
-
 trainvectors = cell(10,1);
+
 for i = 0:9
-    v = trainv(trainlab == i,:);
-    n = i+1;
-    trainvectors{n} = v;
+    trainvectors{i+1} = trainv(trainlab == i,:);
 end
-
-
 
 for i = 1:10
     [~,Ci] = kmeans(trainvectors{i},M);
     clusters{i} = Ci;
 end
-
 
 trainvClust = cell2mat(clusters);
 trainlabClust = NaN(10*M,1);
