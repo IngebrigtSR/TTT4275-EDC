@@ -23,11 +23,10 @@ tic;
 for i = 1:Ntest
     distances = dist(trainvClust,testv(i,:)');
     [~,idx] = sort(distances);
-    k_min = idx(1:k);
-    labels = trainlabClust(k_min);
+    kmin = idx(1:k);
+    labels = trainlabClust(kmin);
     num = 0:9;
-    count = hist(labels,num);
-    [~,pred] = max(count);
+    [~,pred] = max(hist(labels,num));
     guess(pred,i) = 1;
 end
 toc
@@ -35,8 +34,7 @@ toc
 %% Knowns for Confusion Matrix
 known = zeros(Nclasses,Ntest);
 for i = 1:Ntest
-    l = testlab(i);
-    known(l+1,i) = 1;
+    known(testlab(i)+1,i) = 1;
 end
 
 
